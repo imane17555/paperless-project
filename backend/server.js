@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
 
 app.post('/api/register', (req, res) => {
   const { first, last, nid, email, phone, pass } = req.body;
-  if (!first  !last  !nid  !email  !phone || !pass) {
+  if (!first || !last || !nid || !email || !phone || !pass) {
     return res.status(400).json({ error: 'يرجى ملء جميع الحقول المطلوبة' });
   }
   const joinDate = new Date().toLocaleDateString('ar-DZ');
@@ -72,6 +72,22 @@ app.post('/api/login', (req, res) => {
     delete user.pass;
     res.json({ user });
   });
+});
+
+app.post('/api/requests', (req, res) => {
+  const { userId, docType, fullName, nid, birthDate, phone, address, purpose, notes } = req.body;
+  if (!userId || !docType || !fullName || !nid || !phone || !address || !purpose) {
+    return res.status(400).json({ error: 'يرجى ملء جميع الحقول المطلوبة للطلب' });
+  }
+  const createdDate = new Date().toLocaleDateString('ar-DZ');
+  const stmt = db.prepare(`INSERT INTO requests (user_id, doc_type, full_name, nid, birth_date, phone, address, purpose, notes, created_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+  stmt.run([userId, docType, fullName, nid, birthDate || '', phone, address, purpose, notes || '', createdDate], function (err) {
+    if (err) {
+      return res.status(500).json({ error: 'حدث خطأ أثناء إنشاء الطلب' });
+    }
+    res.status(201).json({ requestId: this.lastID });
+  });
+  stmt.finalize();
 });
 
 app.get('/api/requests/:userId', (req, res) => {
