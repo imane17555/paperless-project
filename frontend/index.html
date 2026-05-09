@@ -1,0 +1,946 @@
+ <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PaperLess — منصة الوثائق الإدارية</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --green: #00875A; --green-light: #00B377;
+  --green-dim: rgba(0,135,90,0.12); --green-glow: rgba(0,135,90,0.3);
+  --bg: #F4F6F9; --white: #ffffff;
+  --dark: #0D1B2A; --dark2: #1A2B3C;
+  --muted: #6B7A8D; --border: #E2E8F0;
+  --red: #E53E3E; --yellow: #F6AD55; --blue: #3B82F6;
+  --sidebar-w: 260px;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
+.page { display: none; }
+.page.active { display: block; }
+.btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.65rem 1.4rem; border-radius:10px; font-family:'Tajawal',sans-serif; font-size:0.95rem; font-weight:600; cursor:pointer; border:none; transition:all 0.25s; text-decoration:none; }
+.btn-ghost { background:rgba(255,255,255,0.09); color:white; border:1px solid rgba(255,255,255,0.15); }
+.btn-ghost:hover { background:rgba(255,255,255,0.16); }
+.btn-green { background:var(--green); color:white; }
+.btn-green:hover { background:var(--green-light); transform:translateY(-1px); box-shadow:0 6px 20px var(--green-glow); }
+.btn-outline { background:transparent; color:var(--green); border:1.5px solid var(--green); }
+.btn-outline:hover { background:var(--green-dim); }
+.btn-white { background:white; color:var(--dark); }
+.btn-white:hover { background:#f0f4f8; }
+.btn-danger { background:rgba(229,62,62,0.1); color:var(--red); border:1px solid rgba(229,62,62,0.2); }
+.btn-lg { padding:0.9rem 2rem; font-size:1.05rem; border-radius:12px; }
+.btn-full { width:100%; justify-content:center; }
+
+/* LANDING */
+#landing { min-height:100vh; background:linear-gradient(160deg,var(--dark) 0%,var(--dark2) 100%); position:relative; overflow:hidden; }
+#landing::before { content:''; position:absolute; width:700px; height:700px; background:radial-gradient(circle,rgba(0,135,90,0.18),transparent 70%); top:-150px; left:-200px; border-radius:50%; animation:bgPulse 7s ease-in-out infinite; }
+#landing::after { content:''; position:absolute; width:400px; height:400px; background:radial-gradient(circle,rgba(0,179,119,0.1),transparent 70%); bottom:-80px; right:-80px; border-radius:50%; animation:bgPulse 9s ease-in-out 2s infinite; }
+@keyframes bgPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+.land-nav { position:relative; z-index:10; display:flex; justify-content:space-between; align-items:center; padding:1.5rem 5%; border-bottom:1px solid rgba(255,255,255,0.06); }
+.logo { display:flex; align-items:center; gap:0.6rem; font-size:1.6rem; font-weight:900; color:white; letter-spacing:-1px; cursor:pointer; }
+.logo-icon { width:38px; height:38px; background:var(--green); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+.logo-dot { color:var(--green-light); }
+.land-nav-btns { display:flex; gap:0.8rem; }
+.hero { position:relative; z-index:10; display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:4rem; padding:5rem 5% 4rem; }
+.hero-badge { display:inline-flex; align-items:center; gap:0.5rem; background:rgba(0,135,90,0.2); border:1px solid rgba(0,135,90,0.4); color:#4ade80; border-radius:30px; padding:0.35rem 1rem; font-size:0.8rem; margin-bottom:1.5rem; }
+.hero-badge-dot { width:6px; height:6px; background:#4ade80; border-radius:50%; animation:blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+.hero h1 { font-size:clamp(2rem,3.8vw,3.8rem); font-weight:900; line-height:1.15; color:white; margin-bottom:1.2rem; }
+.hero h1 span { color:var(--green-light); }
+.hero p { font-size:1rem; color:rgba(255,255,255,0.6); line-height:1.9; margin-bottom:2rem; }
+.hero-btns { display:flex; gap:1rem; flex-wrap:wrap; }
+.mock-card { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:1.5rem; max-width:380px; width:100%; backdrop-filter:blur(20px); animation:cardFloat 5s ease-in-out infinite; }
+@keyframes cardFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+.mock-title { font-size:0.85rem; font-weight:700; color:white; margin-bottom:1rem; opacity:0.8; }
+.mock-steps { display:flex; flex-direction:column; gap:0.7rem; }
+.mock-step { display:flex; align-items:center; gap:0.8rem; background:rgba(255,255,255,0.05); border-radius:10px; padding:0.7rem 1rem; }
+.mock-ico { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0; }
+.ico-g{background:rgba(0,135,90,0.3);} .ico-b{background:rgba(59,130,246,0.3);} .ico-w{background:rgba(255,255,255,0.08);}
+.mock-step-lbl { font-size:0.82rem; color:rgba(255,255,255,0.8); flex:1; }
+.mbadge { font-size:0.68rem; padding:0.2rem 0.55rem; border-radius:20px; font-weight:600; }
+.mbadge-g{background:rgba(0,135,90,0.2);color:#4ade80;} .mbadge-b{background:rgba(59,130,246,0.15);color:#93c5fd;} .mbadge-w{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);}
+.mock-prog { margin-top:1rem; }
+.mock-prog-top { display:flex; justify-content:space-between; font-size:0.72rem; color:rgba(255,255,255,0.45); margin-bottom:0.4rem; }
+.mock-bar { height:5px; background:rgba(255,255,255,0.1); border-radius:3px; }
+.mock-bar-fill { height:100%; width:60%; background:linear-gradient(90deg,var(--green),var(--green-light)); border-radius:3px; }
+.features-section { padding:5rem 5%; background:var(--bg); }
+.section-head { text-align:center; margin-bottom:3rem; }
+.section-head .stag { display:inline-block; background:var(--green-dim); color:var(--green); border:1px solid rgba(0,135,90,0.2); border-radius:30px; padding:0.3rem 1rem; font-size:0.8rem; font-weight:600; margin-bottom:0.8rem; }
+.section-head h2 { font-size:1.9rem; font-weight:800; margin-bottom:0.4rem; }
+.section-head p { color:var(--muted); font-size:0.95rem; }
+.section-subhead { font-size:1.2rem; font-weight:700; margin-bottom:1.5rem; color:var(--dark); display:inline-block; border-bottom:3px solid var(--green); padding-bottom:0.25rem; }
+.features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; }
+.feat-card { background:white; border-radius:16px; padding:1.8rem; border:1px solid var(--border); transition:all 0.3s; }
+.feat-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.07); border-color:rgba(0,135,90,0.2); }
+.feat-icon { width:48px; height:48px; border-radius:12px; background:var(--green-dim); display:flex; align-items:center; justify-content:center; font-size:1.4rem; margin-bottom:1rem; }
+.feat-title { font-size:1rem; font-weight:700; margin-bottom:0.4rem; }
+.feat-desc { font-size:0.88rem; color:var(--muted); line-height:1.7; }
+.doc-types-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+.doc-type-card { border:1px solid var(--border); border-radius:14px; padding:1.5rem; text-align:center; cursor:pointer; transition:all 0.25s; }
+.doc-type-card:hover { border-color:var(--green); background:var(--green-dim); }
+.doc-type-icon { width:52px; height:52px; border-radius:14px; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:1.6rem; margin:0 auto 0.8rem; }
+.doc-type-name { font-size:0.9rem; font-weight:700; margin-bottom:0.2rem; }
+.doc-type-sub { font-size:0.75rem; color:var(--muted); }
+.cta-section { padding:5rem 5%; background:linear-gradient(135deg,var(--dark),var(--dark2)); text-align:center; }
+.cta-section h2 { font-size:2rem; font-weight:900; color:white; margin-bottom:0.8rem; }
+.cta-section p { color:rgba(255,255,255,0.55); margin-bottom:2rem; }
+footer { background:var(--dark); padding:2rem 5%; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
+.footer-logo { font-size:1.1rem; font-weight:900; color:white; }
+.footer-copy { font-size:0.8rem; color:rgba(255,255,255,0.35); }
+
+/* AUTH */
+.auth-page { min-height:100vh; display:grid; grid-template-columns:1fr 1fr; }
+.auth-left { background:linear-gradient(160deg,var(--dark),var(--dark2)); display:flex; flex-direction:column; justify-content:center; padding:4rem; position:relative; overflow:hidden; }
+.auth-left::before { content:''; position:absolute; width:500px; height:500px; background:radial-gradient(circle,rgba(0,135,90,0.2),transparent 70%); top:-100px; left:-100px; border-radius:50%; }
+.auth-left-content { position:relative; z-index:1; }
+.auth-left h2 { font-size:1.9rem; font-weight:900; color:white; margin-bottom:0.7rem; }
+.auth-left p { color:rgba(255,255,255,0.55); line-height:1.8; margin-bottom:2rem; }
+.auth-points { display:flex; flex-direction:column; gap:0.9rem; }
+.auth-point { display:flex; align-items:center; gap:0.8rem; color:rgba(255,255,255,0.75); font-size:0.9rem; }
+.auth-point::before { content:''; width:8px; height:8px; background:var(--green-light); border-radius:50%; flex-shrink:0; }
+.auth-right { display:flex; align-items:center; justify-content:center; background:var(--bg); padding:3rem; }
+.auth-box { width:100%; max-width:420px; }
+.auth-box h3 { font-size:1.5rem; font-weight:800; margin-bottom:0.3rem; }
+.auth-sub { color:var(--muted); font-size:0.9rem; margin-bottom:2rem; }
+.auth-link-p { text-align:center; margin-top:1rem; font-size:0.9rem; color:var(--muted); }
+.auth-link-p a { color:var(--green); font-weight:600; cursor:pointer; }
+.auth-link-p a:hover { text-decoration:underline; }
+.auth-logo { display:flex; align-items:center; gap:0.5rem; font-size:1.4rem; font-weight:900; color:var(--dark); margin-bottom:2rem; cursor:pointer; }
+.auth-logo .logo-icon { width:32px; height:32px; font-size:0.9rem; }
+.form-group { margin-bottom:1.1rem; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.form-label { display:block; font-size:0.85rem; font-weight:600; color:var(--dark2); margin-bottom:0.4rem; }
+.form-input,.form-select,.form-textarea { width:100%; padding:0.75rem 1rem; border:1.5px solid var(--border); border-radius:10px; font-family:'Tajawal',sans-serif; font-size:0.93rem; color:var(--dark); background:white; outline:none; transition:border-color 0.25s,box-shadow 0.25s; }
+.form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--green); box-shadow:0 0 0 3px var(--green-dim); }
+.form-textarea { resize:none; height:90px; }
+.alert { border-radius:10px; padding:0.8rem 1.1rem; font-size:0.88rem; margin-bottom:1rem; display:none; }
+.alert.show { display:block; }
+.alert-err { background:rgba(229,62,62,0.1); color:var(--red); border:1px solid rgba(229,62,62,0.2); }
+
+/* DASHBOARD */
+.dash-layout { display:flex; min-height:100vh; }
+.sidebar { width:var(--sidebar-w); background:var(--dark); display:flex; flex-direction:column; position:fixed; top:0; right:0; bottom:0; z-index:50; }
+.sidebar-logo { padding:1.3rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.06); }
+.sidebar-nav { flex:1; padding:0.8rem 0; overflow-y:auto; }
+.nav-sec { font-size:0.68rem; color:rgba(255,255,255,0.28); letter-spacing:1px; text-transform:uppercase; padding:0.7rem 1.2rem 0.3rem; }
+.nav-item { display:flex; align-items:center; gap:0.8rem; padding:0.72rem 1.2rem; cursor:pointer; color:rgba(255,255,255,0.5); font-size:0.9rem; font-weight:500; transition:all 0.2s; border-right:3px solid transparent; }
+.nav-item:hover { background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.9); }
+.nav-item.active { background:rgba(0,135,90,0.15); color:white; border-right-color:var(--green); }
+.nav-item-ico { font-size:1.05rem; width:20px; text-align:center; }
+.sidebar-foot { padding:1rem 1.2rem; border-top:1px solid rgba(255,255,255,0.06); }
+.sb-user { display:flex; align-items:center; gap:0.8rem; }
+.sb-avatar { width:36px; height:36px; background:var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0; color:white; font-weight:700; }
+.sb-name { font-size:0.85rem; font-weight:600; color:white; }
+.sb-role { font-size:0.72rem; color:rgba(255,255,255,0.38); }
+.sb-logout { margin-right:auto; background:none; border:none; color:rgba(255,255,255,0.28); cursor:pointer; font-size:1rem; padding:4px; transition:color 0.2s; }
+.sb-logout:hover { color:var(--red); }
+.dash-main { margin-right:var(--sidebar-w); flex:1; }
+.dash-header { background:white; border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:40; }
+.dash-title { font-size:1.05rem; font-weight:700; }
+.dash-content { padding:2rem; }
+.dash-panel { display:none; }
+.dash-panel.active { display:block; }
+.welcome-banner { background:linear-gradient(135deg,var(--dark),var(--dark2)); border-radius:18px; padding:2rem 2.5rem; display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; position:relative; overflow:hidden; }
+.welcome-banner::before { content:''; position:absolute; width:300px; height:300px; background:radial-gradient(circle,rgba(0,135,90,0.2),transparent 70%); top:-100px; left:-80px; border-radius:50%; }
+.wb-text { position:relative; z-index:1; }
+.wb-text h2 { font-size:1.4rem; font-weight:800; color:white; margin-bottom:0.3rem; }
+.wb-text p { color:rgba(255,255,255,0.55); font-size:0.88rem; }
+.wb-icon { font-size:3.5rem; }
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem; }
+.kpi-card { background:white; border-radius:14px; padding:1.3rem; border:1px solid var(--border); }
+.kpi-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:0.9rem; }
+.kpi-num { font-size:1.8rem; font-weight:900; margin-bottom:0.1rem; }
+.kpi-label { font-size:0.78rem; color:var(--muted); }
+.card { background:white; border-radius:16px; border:1px solid var(--border); overflow:hidden; margin-bottom:1.5rem; }
+.card-header { padding:1.1rem 1.5rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.card-title { font-size:0.98rem; font-weight:700; }
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+th { padding:0.75rem 1.2rem; text-align:right; font-size:0.75rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; background:var(--bg); border-bottom:1px solid var(--border); }
+td { padding:0.9rem 1.2rem; font-size:0.88rem; border-bottom:1px solid var(--border); }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:rgba(0,135,90,0.02); }
+.td-action { cursor:pointer; color:var(--green); font-size:0.82rem; font-weight:600; }
+.td-action:hover { text-decoration:underline; }
+.badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.22rem 0.65rem; border-radius:20px; font-size:0.73rem; font-weight:600; }
+.badge::before { content:''; width:5px; height:5px; border-radius:50%; }
+.badge-pending{background:rgba(246,173,85,0.15);color:#B7791F;} .badge-pending::before{background:var(--yellow);}
+.badge-review{background:rgba(59,130,246,0.12);color:#1D4ED8;} .badge-review::before{background:var(--blue);}
+.badge-approved{background:rgba(0,135,90,0.12);color:var(--green);} .badge-approved::before{background:var(--green);}
+.badge-rejected{background:rgba(229,62,62,0.12);color:var(--red);} .badge-rejected::before{background:var(--red);}
+.badge-ready{background:rgba(34,197,94,0.15);color:#15803D;} .badge-ready::before{background:#22c55e;}
+.step-bar { display:flex; align-items:center; margin-bottom:2.5rem; }
+.step-item { display:flex; align-items:center; gap:0.5rem; }
+.step-circle { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; border:2px solid var(--border); color:var(--muted); transition:all 0.3s; flex-shrink:0; }
+.step-circle.s-done{background:var(--green);border-color:var(--green);color:white;}
+.step-circle.s-active{background:var(--green-dim);border-color:var(--green);color:var(--green);}
+.step-lbl { font-size:0.8rem; color:var(--muted); }
+.step-lbl s-active{color:var(--green);font-weight:600;}
+.step-lbl.s-done{color:var(--dark);}
+.step-line { flex:1; height:1px; background:var(--border); margin:0 0.5rem; }
+.step-line.s-done{background:var(--green);}
+.doc-sel-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem; }
+.doc-sel-card { border:2px solid var(--border); border-radius:14px; padding:1.2rem; cursor:pointer; transition:all 0.25s; text-align:center; }
+.doc-sel-card:hover,.doc-sel-card.selected{border-color:var(--green);background:var(--green-dim);}
+.doc-sel-ico { font-size:2rem; margin-bottom:0.5rem; }
+.doc-sel-name { font-size:0.87rem; font-weight:700; margin-bottom:0.15rem; }
+.doc-sel-hint { font-size:0.73rem; color:var(--muted); }
+.req-docs { background:#FFFBEB; border:1px solid #FCD34D; border-radius:12px; padding:1.1rem; margin-bottom:1.3rem; }
+.req-docs h4 { font-size:0.88rem; font-weight:700; color:#92400E; margin-bottom:0.7rem; }
+.req-doc-list { display:flex; flex-direction:column; gap:0.35rem; }
+.req-doc-item { font-size:0.83rem; color:#78350F; display:flex; align-items:center; gap:0.5rem; }
+.req-doc-item::before{content:'📎';}
+.upload-zone { border:2px dashed var(--border); border-radius:14px; padding:2rem; text-align:center; cursor:pointer; transition:all 0.25s; }
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--green);background:var(--green-dim);}
+.upload-zone-ico { font-size:2.5rem; margin-bottom:0.5rem; }
+.upload-zone p { font-size:0.88rem; color:var(--muted); }
+.upload-zone span { color:var(--green); font-weight:600; }
+#fileInput{display:none;}
+.uploaded-list { display:flex; flex-direction:column; gap:0.5rem; margin-top:0.8rem; }
+.uploaded-item { display:flex; align-items:center; gap:0.7rem; background:var(--bg); border-radius:8px; padding:0.55rem 0.8rem; font-size:0.83rem; }
+.uploaded-item-name{flex:1;}
+.uploaded-item-size{color:var(--muted);font-size:0.75rem;}
+.uploaded-item-del{background:none;border:none;color:var(--red);cursor:pointer;font-size:0.9rem;padding:2px;}
+.summary-box { background:var(--bg); border-radius:14px; padding:1.4rem; }
+.summary-row { display:flex; justify-content:space-between; padding:0.55rem 0; border-bottom:1px solid var(--border); font-size:0.88rem; }
+.summary-row:last-child{border-bottom:none;}
+.summary-key{color:var(--muted);}
+.summary-val{font-weight:600;}
+.form-actions{display:flex;justify-content:space-between;margin-top:1.5rem;}
+.filters-bar{display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center;}
+.filter-btn{padding:0.4rem 0.9rem;border-radius:8px;border:1px solid var(--border);background:white;font-family:'Tajawal',sans-serif;font-size:0.83rem;cursor:pointer;transition:all 0.2s;font-weight:500;}
+.filter-btn.active,.filter-btn:hover{background:var(--green);border-color:var(--green);color:white;}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(4px);}
+.modal-ov.open{display:flex;}
+.modal{background:white;border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.modal-head{padding:1.4rem 1.7rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-head h3{font-size:1.05rem;font-weight:700;}
+.modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);}
+.modal-close:hover{color:var(--red);}
+.modal-body{padding:1.7rem;}
+.timeline{display:flex;flex-direction:column;}
+.tl-item{display:flex;gap:1rem;padding-bottom:1.4rem;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-left{display:flex;flex-direction:column;align-items:center;}
+.tl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.tl-line{flex:1;width:1px;background:var(--border);margin:4px 0;}
+.tl-item:last-child .tl-line{display:none;}
+.tl-title{font-size:0.88rem;font-weight:600;margin-bottom:0.2rem;}
+.tl-date{font-size:0.75rem;color:var(--muted);}
+.tl-note{font-size:0.82rem;color:var(--muted);margin-top:0.
+   3rem;background:var(--bg);border-radius:8px;padding:0.5rem 0.7rem;}
+.profile-card{background:white;border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:1.2rem;}
+.profile-head{background:linear-gradient(135deg,var(--dark),var(--dark2));padding:2rem;display:flex;align-items:center;gap:1.5rem;}
+.profile-avatar{width:70px;height:70px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:white;font-weight:900;border:3px solid rgba(255,255,255,0.2);flex-shrink:0;}
+.profile-name{font-size:1.3rem;font-weight:800;color:white;}
+.profile-email{font-size:0.85rem;color:rgba(255,255,255,0.5);margin-top:0.2rem;}
+.profile-body{padding:1.5rem;}
+.profile-field{display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.88rem;}
+.profile-field:last-child{border-bottom:none;}
+.pf-key{color:var(--muted);}
+.pf-val{font-weight:600;}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:white;padding:0.75rem 1.5rem;border-radius:50px;font-size:0.88rem;font-weight:600;opacity:0;transition:all 0.3s;z-index:999;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@media(max-width:900px){
+  .auth-page{grid-template-columns:1fr;} .auth-left{display:none;}
+  .hero{grid-template-columns:1fr;padding:4rem 5% 3rem;}
+  .hero-visual{display:none;} .features-grid,.doc-types-grid{grid-template-columns:1fr 1fr;}
+  .kpi-grid{grid-template-columns:1fr 1fr;} .sidebar{display:none;} .dash-main{margin-right:0;}
+  .doc-sel-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LANDING ══ -->
+<div class="page active" id="landing">
+  <nav class="land-nav">
+    <div class="logo" onclick="showPage('landing')"><div class="logo-icon">📄</div>Paper<span class="logo-dot">Less</span></div>
+    <div class="land-nav-btns">
+      <button class="btn btn-ghost" onclick="showPage('login')">تسجيل الدخول</button>
+      <button class="btn btn-green" onclick="showPage('register')">إنشاء حساب</button>
+    </div>
+  </nav>
+  <div class="hero">
+    <div>
+      <div class="hero-badge"><span class="hero-badge-dot"></span>منصة الوثائق الإدارية الجزائرية</div>
+      <h1>وثائقك الإدارية<br><span>من دارك</span> 🏠</h1>
+      <p>بدل الطوابير الطويلة والتنقلات المتعبة — اطلب وثيقتك الإدارية إلكترونياً في دقائق وتابع حالتها لحظة بلحظة.</p>
+      <div class="hero-btns">
+        <button class="btn btn-green btn-lg" onclick="showPage('register')">ابدأ الآن مجاناً</button>
+        <button class="btn btn-ghost btn-lg" onclick="showPage('login')">لديّ حساب</button>
+      </div>
+    </div>
+    <div class="hero-visual" style="display:flex;justify-content:center;">
+      <div class="mock-card">
+        <div class="mock-title">متابعة الطلب #PL-047823</div>
+        <div class="mock-steps">
+          <div class="mock-step"><div class="mock-ico ico-g">✅</div><span class="mock-step-lbl">تقديم الطلب</span><span class="mbadge mbadge-g">مكتمل</span></div>
+          <div class="mock-step"><div class="mock-ico ico-g">✅</div><span class="mock-step-lbl">مراجعة الملفات</span><span class="mbadge mbadge-g">مكتمل</span></div>
+          <div class="mock-step"><div class="mock-ico ico-b">⚙️</div><span class="mock-step-lbl">معالجة الطلب</span><span class="mbadge mbadge-b">جاري</span></div>
+          <div class="mock-step"><div class="mock-ico ico-w">📬</div><span class="mock-step-lbl">الاستلام</span><span class="mbadge mbadge-w">انتظار</span></div>
+        </div>
+        <div class="mock-prog">
+          <div class="mock-prog-top"><span>نسبة الإنجاز</span><span>65%</span></div>
+          <div class="mock-bar"><div class="mock-bar-fill"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="features-section">
+    <div class="section-head"><div class="stag">✦ المنصة الموحدة</div><h2>كل شيء في مكان واحد</h2><p>منصة متكاملة تجمع كل الخدمات والوثائق المتاحة</p></div>
+    
+    <!-- الوثائق المتاحة -->
+    <div style="margin-bottom:3rem;">
+      <h3 class="section-subhead">📄 الوثائق التي يمكنك طلبها</h3>
+      <div class="doc-types-grid">
+        <div class="doc-type-card"><div class="doc-type-icon">🎂</div><div class="doc-type-name">شهادة الميلاد</div><div class="doc-type-sub">نسخة كاملة أو ملخص</div></div>
+        <div class="doc-type-card"><div class="doc-type-icon">🏠</div><div class="doc-type-name">شهادة الإقامة</div><div class="doc-type-sub">لأغراض إدارية</div></div>
+        <div class="doc-type-card"><div class="doc-type-icon">💍</div><div class="doc-type-name">عقد الزواج</div><div class="doc-type-sub">نسخة رسمية معتمدة</div></div>
+        <div class="doc-type-card"><div class="doc-type-icon">🎓</div><div class="doc-type-name">شهادة التخرج</div><div class="doc-type-sub">مصادقة وتوثيق</div></div>
+        <div class="doc-type-card"><div class="doc-type-icon">🧾</div><div class="doc-type-name">بطاقة الإقامة</div><div class="doc-type-sub">تجديد وإصدار جديد</div></div>
+        <div class="doc-type-card"><div class="doc-type-icon">📜</div><div class="doc-type-name">السجل العدلي</div><div class="doc-type-sub">رقم 3 للاستعمال الخاص</div></div>
+        <div class="doc-type-card"><div class="doc-type-icon">🏥</div><div class="doc-type-name">شهادة الوفاة</div><div class="doc-type-sub">نسخة رسمية</div></div>
+        <div class="doc-type-card"><div class="doc-type-icon">📋</div><div class="doc-type-name">وثيقة أخرى</div><div class="doc-type-sub">صف طلبك بالتفصيل</div></div>
+      </div>
+    </div>
+
+    <!-- الخدمات الرئيسية -->
+    <div>
+      <h3 class="section-subhead">✨ الخدمات المتوفرة</h3>
+      <div class="features-grid">
+        <div class="feat-card"><div class="feat-icon">📱</div><div class="feat-title">طلب إلكتروني سهل</div><div class="feat-desc">اختر وثيقتك، عمّر معلوماتك، ارفع ملفاتك — كل شيء في دقائق من أي جهاز.</div></div>
+        <div class="feat-card"><div class="feat-icon">🔔</div><div class="feat-title">متابعة لحظية</div><div class="feat-desc">تابع حالة طلبك في الوقت الحقيقي وأعرف متى تكون وثيقتك جاهزة.</div></div>
+        <div class="feat-card"><div class="feat-icon">📋</div><div class="feat-title">قائمة الأوراق المطلوبة</div><div class="feat-desc">الموقع يعرضلك تلقائياً الأوراق اللازمة لكل نوع وثيقة حتى ما تروحش ناقص.</div></div>
+        <div class="feat-card"><div class="feat-icon">🔒</div><div class="feat-title">أمان البيانات</div><div class="feat-desc">بياناتك ووثائقك محمية. ما يقدر يشوف ملفاتك غير أنت والموظف المسؤول.</div></div>
+        <div class="feat-card"><div class="feat-icon">⚡</div><div class="feat-title">معالجة سريعة</div><div class="feat-desc">الإدارة تستقبل طلبك فوراً وتعالجه بشكل منظم بدون ضياع الأوراق.</div></div>
+        <div class="feat-card"><div class="feat-icon">🗃️</div><div class="feat-title">أرشيف طلباتك</div><div class="feat-desc">كل طلباتك السابقة محفوظة في حسابك، قدر تراجعها وتعيد الطلب.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="cta-section">
+    <h2>جرّب الخدمة الآن مجاناً 🚀</h2>
+    <p>سجّل حسابك وقدّم أول طلب في أقل من 5 دقائق</p>
+    <button class="btn btn-white btn-lg" onclick="showPage('register')">إنشاء حساب مجاني</button>
+  </div>
+  <footer>
+    <div class="footer-logo">📄 PaperLess</div>
+    <div class="footer-copy">© 2025 PaperLess — مشروع أكاديمي | WAD</div>
+  </footer>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div class="page" id="login">
+  <div class="auth-page">
+    <div class="auth-left">
+      <div class="auth-left-content">
+        <div class="logo" style="color:white;margin-bottom:2rem;" onclick="showPage('landing')"><div class="logo-icon">📄</div>Paper<span style="color:var(--green-light);">Less</span></div>
+        <h2>مرحباً بعودتك 👋</h2>
+        <p>سجّل دخولك للوصول لطلباتك ومتابعة وثائقك الإدارية</p>
+        <div class="auth-points">
+          <div class="auth-point">تابع طلباتك في الوقت الحقيقي</div>
+          <div class="auth-point">سجّل طلبات جديدة بسهولة</div>
+          <div class="auth-point">استقبل إشعارات عند جاهزية وثيقتك</div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-box">
+        <div class="auth-logo" onclick="showPage('landing')"><div class="logo-icon">📄</div>Paper<span style="color:var(--green);">Less</span></div>
+        <h3>تسجيل الدخول</h3>
+        <p class="auth-sub">أدخل بياناتك للمتابعة</p>
+        <div class="alert alert-err" id="loginErr"></div>
+        <div class="form-group"><label class="form-label">البريد الإلكتروني</label><input class="form-input" type="email" id="loginEmail" placeholder="example@email.com"></div>
+        <div class="form-group"><label class="form-label">كلمة المرور</label><input class="form-input" type="password" id="loginPass" placeholder="••••••••"></div>
+        <button class="btn btn-green btn-full" style="margin-top:0.5rem;" onclick="doLogin()">دخول</button>
+        <p class="auth-link-p">ما عندكش حساب؟ <a onclick="showPage('register')">سجّل الآن</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REGISTER ══ -->
+<div class="page" id="register">
+  <div class="auth-page">
+    <div class="auth-left">
+      <div class="auth-left-content">
+        <div class="logo" style="color:white;margin-bottom:2rem;" onclick="showPage('landing')"><div class="logo-icon">📄</div>Paper<span style="color:var(--green-light);">Less</span></div>
+        <h2>انضم لـ PaperLess 🎉</h2>
+        <p>أنشئ حسابك المجاني واستفد من خدمات الوثائق الإدارية الرقمية</p>
+        <div class="auth-points">
+          <div class="auth-point">مجاني 100% بدون رسوم</div>
+          <div class="auth-point">طلب وثائقك من أي مكان</div>
+          <div class="auth-point">متابعة لحظية لحالة طلباتك</div>
+          <div class="auth-point">أرشيف محفوظ لكل طلباتك</div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-box">
+        <div class="auth-logo" onclick="showPage('landing')"><div class="logo-icon">📄</div>Paper<span style="color:var(--green);">Less</span></div>
+        <h3>إنشاء حساب جديد</h3>
+        <p class="auth-sub">أدخل معلوماتك الشخصية</p>
+        <div class="alert alert-err" id="regErr"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">الاسم الأول *</label><input class="form-input" type="text" id="regFirst" placeholder="محمد"></div>
+          <div class="form-group"><label class="form-label">اللقب *</label><input class="form-input" type="text" id="regLast" placeholder="بن علي"></div>
+        </div>
+        <div class="form-group"><label class="form-label">رقم الهوية الوطنية *</label><input class="form-input" type="text" id="regNid" placeholder="123456789012345" maxlength="18"></div>
+        <div class="form-group"><label class="form-label">البريد الإلكتروني *</label><input class="form-input" type="email" id="regEmail" placeholder="example@email.com"></div>
+        <div class="form-group"><label class="form-label">رقم الهاتف *</label><input class="form-input" type="tel" id="regPhone" placeholder="0550000000"></div>
+        <div class="form-group"><label class="form-label">كلمة المرور *</label><input class="form-input" type="password" id="regPass" placeholder="6 أحرف على الأقل"></div>
+        <button class="btn btn-green btn-full" style="margin-top:0.5rem;" onclick="doRegister()">إنشاء الحساب</button>
+        <p class="auth-link-p">عندك حساب؟ <a onclick="showPage('login')">سجّل دخولك</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div class="page" id="dashboard">
+  <div class="dash-layout">
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo" style="color:white;font-size:1.3rem;" onclick="showPage('landing')"><div class="logo-icon" style="width:32px;height:32px;font-size:0.9rem;">📄</div>Paper<span style="color:var(--green-light);">Less</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-sec">الرئيسية</div>
+        <div class="nav-item active" onclick="switchPanel('home')"><span class="nav-item-ico">🏠</span> لوحة التحكم</div>
+        <div class="nav-sec">الطلبات</div>
+        <div class="nav-item" onclick="switchPanel('new-request')"><span class="nav-item-ico">➕</span> طلب جديد</div>
+                 <div class="nav-item" onclick="switchPanel('my-requests')"><span class="nav-item-ico">📁</span> طلباتي</div>
+        <div class="nav-sec">الحساب</div>
+        <div class="nav-item" onclick="switchPanel('profile')"><span class="nav-item-ico">👤</span> ملفي الشخصي</div>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="sb-user">
+          <div class="sb-avatar" id="sbAvatar">م</div>
+          <div><div class="sb-name" id="sbName">—</div><div class="sb-role">مواطن</div></div>
+          <button class="sb-logout" onclick="doLogout()" title="خروج">🚪</button>
+        </div>
+      </div>
+    </div>
+    <div class="dash-main">
+      <div class="dash-header">
+        <div class="dash-title" id="dashTitle">لوحة التحكم</div>
+        <button class="btn btn-green" onclick="switchPanel('new-request')">+ طلب جديد</button>
+      </div>
+      <div class="dash-content">
+
+        <!-- HOME -->
+        <div class="dash-panel active" id="panel-home">
+          <div class="welcome-banner">
+            <div class="wb-text"><h2 id="welcomeMsg">مرحباً 👋</h2><p>هذه لوحة تحكمك — تابع طلباتك وقدّم طلبات جديدة بسهولة</p></div>
+            <div class="wb-icon">🏛️</div>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-icon" style="background:rgba(0,135,90,0.1);">📊</div><div class="kpi-num" id="kpiTotal">0</div><div class="kpi-label">إجمالي الطلبات</div></div>
+            <div class="kpi-card"><div class="kpi-icon" style="background:rgba(246,173,85,0.15);">⏳</div><div class="kpi-num" id="kpiPending">0</div><div class="kpi-label">قيد الانتظار</div></div>
+            <div class="kpi-card"><div class="kpi-icon" style="background:rgba(59,130,246,0.1);">🔄</div><div class="kpi-num" id="kpiProcess">0</div><div class="kpi-label">قيد المراجعة</div></div>
+            <div class="kpi-card"><div class="kpi-icon" style="background:rgba(34,197,94,0.1);">✅</div><div class="kpi-num" id="kpiDone">0</div><div class="kpi-label">جاهزة للاستلام</div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">آخر الطلبات</div><button class="btn btn-outline" style="padding:0.35rem 0.9rem;font-size:0.82rem;" onclick="switchPanel('my-requests')">عرض الكل</button></div>
+            <div class="table-wrap"><table><thead><tr><th>رقم الطلب</th><th>نوع الوثيقة</th><th>التاريخ</th><th>الحالة</th><th>تفاصيل</th></tr></thead><tbody id="homeRecentTbody"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">لا توجد طلبات بعد</td></tr></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- NEW REQUEST -->
+        <div class="dash-panel" id="panel-new-request">
+          <div style="max-width:720px;">
+            <div class="step-bar" id="stepBar">
+              <div class="step-item"><div class="step-circle s-active" id="sc1">1</div><div class="step-lbl s-active" id="sl1">نوع الوثيقة</div></div>
+              <div class="step-line" id="sline1"></div>
+              <div class="step-item"><div class="step-circle" id="sc2">2</div><div class="step-lbl" id="sl2">المعلومات</div></div>
+              <div class="step-line" id="sline2"></div>
+              <div class="step-item"><div class="step-circle" id="sc3">3</div><div class="step-lbl" id="sl3">رفع الملفات</div></div>
+              <div class="step-line" id="sline3"></div>
+              <div class="step-item"><div class="step-circle" id="sc4">4</div><div class="step-lbl" id="sl4">تأكيد الطلب</div></div>
+            </div>
+
+            <!-- Step 1 -->
+            <div id="step1">
+              <div class="card"><div style="padding:1.5rem;">
+                <div style="font-size:1rem;font-weight:700;margin-bottom:1.2rem;">اختر نوع الوثيقة</div>
+                <div class="doc-sel-grid">
+                    <div class="doc-sel-card" onclick="selectDoc(this,'شهادة الميلاد','🎂',['صورة بطاقة التعريف الوطنية','دفتر العائلة (نسخة)','إيصال دفع الرسوم البلدية'])"><div class="doc-sel-ico">🎂</div><div class="doc-sel-name">شهادة الميلاد</div><div class="doc-sel-hint">نسخة كاملة أو ملخص</div></div>
+                  <div class="doc-sel-card" onclick="selectDoc(this,'شهادة الإقامة','🏠',['صورة بطاقة التعريف الوطنية','فاتورة كهرباء أو ماء حديثة','عقد الإيجار أو سند الملكية'])"><div class="doc-sel-ico">🏠</div><div class="doc-sel-name">شهادة الإقامة</div><div class="doc-sel-hint">لأغراض إدارية</div></div>
+                  <div class="doc-sel-card" onclick="selectDoc(this,'عقد الزواج','💍',['بطاقة التعريف الوطنية للزوجين','دفتر العائلة','شهادات ميلاد الزوجين'])"><div class="doc-sel-ico">💍</div><div class="doc-sel-name">عقد الزواج</div><div class="doc-sel-hint">نسخة رسمية</div></div>
+                  <div class="doc-sel-card" onclick="selectDoc(this,'بطاقة الإقامة','🧾',['صورة جواز السفر','4 صور شخصية حديثة','شهادة الإقامة','ملف طبي'])"><div class="doc-sel-ico">🧾</div><div class="doc-sel-name">بطاقة الإقامة</div><div class="doc-sel-hint">تجديد أو إصدار</div></div>
+                  <div class="doc-sel-card" onclick="selectDoc(this,'السجل العدلي','📜',['صورة بطاقة التعريف الوطنية','إيصال دفع الرسوم'])"><div class="doc-sel-ico">📜</div><div class="doc-sel-name">السجل العدلي</div><div class="doc-sel-hint">رقم 3</div></div>
+                  <div class="doc-sel-card" onclick="selectDoc(this,'شهادة الوفاة','🏥',['بطاقة التعريف للمتوفى','تقرير طبي','هوية مقدم الطلب'])"><div class="doc-sel-ico">🏥</div><div class="doc-sel-name">شهادة الوفاة</div><div class="doc-sel-hint">نسخة رسمية</div></div>
+                  <div class="doc-sel-card" onclick="selectDoc(this,'شهادة التخرج','🎓',['بطاقة التعريف الوطنية','رقم التسجيل الجامعي'])"><div class="doc-sel-ico">🎓</div><div class="doc-sel-name">شهادة التخرج</div><div class="doc-sel-hint">مصادقة وتوثيق</div></div>
+                  <div class="doc-sel-card" onclick="selectDoc(this,'وثيقة أخرى','📋',['بطاقة التعريف الوطنية','الوثائق المتعلقة بطلبك'])"><div class="doc-sel-ico">📋</div><div class="doc-sel-name">وثيقة أخرى</div><div class="doc-sel-hint">صف طلبك</div></div>
+                </div>
+              </div></div>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="step2" style="display:none;">
+              <div class="card"><div style="padding:1.5rem;">
+                <div style="font-size:1rem;font-weight:700;margin-bottom:1.2rem;">أدخل المعلومات المطلوبة</div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">الاسم الكامل *</label><input class="form-input" id="reqName" type="text" placeholder="الاسم واللقب"></div>
+                  <div class="form-group"><label class="form-label">رقم الهوية الوطنية *</label><input class="form-input" id="reqNid" type="text" placeholder="123456789012345"></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">تاريخ الميلاد *</label><input class="form-input" id="reqBirth" type="date"></div>
+                  <div class="form-group"><label class="form-label">الهاتف *</label><input class="form-input" id="reqPhone" type="tel" placeholder="0550000000"></div>
+                </div>
+                <div class="form-group"><label class="form-label">العنوان الحالي *</label><input class="form-input" id="reqAddress" type="text" placeholder="الولاية، البلدية، الحي"></div>
+                <div class="form-group"><label class="form-label">الغرض من الطلب *</label>
+                  <select class="form-select" id="reqPurpose">
+                    <option value="">اختر الغرض</option>
+                    <option>للتوظيف</option><option>للدراسة</option><option>للسفر</option>
+                    <option>لإجراءات بنكية</option><option>للزواج</option><option>لأغراض شخصية</option><option>أخرى</option>
+                  </select>
+                </div>
+                <div class="form-group"><label class="form-label">ملاحظات إضافية (اختياري)</label><textarea class="form-textarea" id="reqNotes" placeholder="أي معلومات إضافية..."></textarea></div>
+                <div class="form-actions">
+                  <button class="btn btn-outline" onclick="goStep(1)">← رجوع</button>
+                  <button class="btn btn-green" onclick="goStep(3)">التالي ←</button>
+                </div>
+              </div></div>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="step3" style="display:none;">
+              <div class="card"><div style="padding:1.5rem;">
+                <div style="font-size:1rem;font-weight:700;margin-bottom:1rem;">رفع الوثائق والملفات المطلوبة</div>
+                <div class="req-docs"><h4>📋 الأوراق المطلوبة:</h4><div class="req-doc-list" id="reqDocsList"></div></div>
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                  <div class="upload-zone-ico">📎</div>
+                  <p>اسحب ملفاتك هنا أو <span>اضغط لاختيار الملفات</span></p>
+                  <p style="font-size:0.78rem;margin-top:0.3rem;">PDF, JPG, PNG — الحجم الأقصى 5MB لكل ملف</p>
+                </div>
+                <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png" onchange="handleFiles(this.files)">
+                <div class="uploaded-list" id="uploadedList"></div>
+                <div class="form-actions" style="margin-top:1.5rem;">
+                  <button class="btn btn-outline" onclick="goStep(2)">← رجوع</button>
+                  <button class="btn btn-green" onclick="goStep(4)">التالي ←</button>
+                </div>
+              </div></div>
+            </div>
+
+            <!-- Step 4 -->
+            <div id="step4" style="display:none;">
+              <div class="card"><div style="padding:1.5rem;">
+                <div style="font-size:1rem;font-weight:700;margin-bottom:1.2rem;">تأكيد الطلب — راجع معلوماتك قبل الإرسال</div>
+                <div class="summary-box">
+                  <div class="summary-row"><span class="summary-key">نوع الوثيقة</span><span class="summary-val" id="sumDoc">—</span></div>
+                  <div class="summary-row"><span class="summary-key">الاسم الكامل</span><span class="summary-val" id="sumName">—</span></div>
+                  <div class="summary-row"><span class="summary-key">رقم الهوية</span><span class="summary-val" id="sumNid">—</span></div>
+                  <div class="summary-row"><span class="summary-key">الهاتف</span><span class="summary-val" id="sumPhone">—</span></div>
+                  <div class="summary-row"><span class="summary-key">العنوان</span><span class="summary-val" id="sumAddr">—</span></div>
+                  <div class="summary-row"><span class="summary-key">الغرض</span><span class="summary-val" id="sumPurp">—</span></div>
+                  <div class="summary-row"><span class="summary-key">الملفات المرفوعة</span><span class="summary-val" id="sumFiles">—</span></div>
+                  <div class="summary-row"><span class="summary-key">تاريخ الطلب</span><span class="summary-val" id="sumDate">—</span></div>
+                </div>
+                <div class="form-actions">
+                  <button class="btn btn-outline" onclick="goStep(3)">← رجوع</button>
+                  <button class="btn btn-green" onclick="submitRequest()">✅ إرسال الطلب</button>
+                </div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MY REQUESTS -->
+        <div class="dash-panel" id="panel-my-requests">
+          <div class="filters-bar">
+            <button class="filter-btn active" onclick="filterReqs('all',this)">الكل</button>
+            <button class="filter-btn" onclick="filterReqs('pending',this)">انتظار</button>
+            <button class="filter-btn" onclick="filterReqs('review',this)">مراجعة</button>
+            <button class="filter-btn" onclick="filterReqs('approved',this)">موافق عليه</button>
+            <button class="filter-btn" onclick="filterReqs('ready',this)">جاهز للاستلام</button>
+            <button class="filter-btn" onclick="filterReqs('rejected',this)">مرفوض</button>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">جميع طلباتي</div></div>
+            <div class="table-wrap"><table>
+              <thead><tr><th>رقم الطلب</th><th>نوع الوثيقة</th><th>التاريخ</th><th>الغرض</th><th>الملفات</th><th>الحالة</th><th>تفاصيل</th></tr></thead>
+              <tbody id="requestsTbody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;">لا توجد طلبات</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- PROFILE -->
+        <div class="dash-panel" id="panel-profile">
+          <div class="profile-card">
+            <div class="profile-head">
+              <div class="profile-avatar" id="profileAvatar">م</div>
+              <div><div class="profile-name" id="profileName">—</div><div class="profile-email" id="profileEmail">—</div></div>
+            </div>
+            <div class="profile-body">
+              <div class="profile-field"><span class="pf-key">الاسم الأول</span><span class="pf-val" id="pfFirst">—</span></div>
+              <div class="profile-field"><span class="pf-key">اللقب</span><span class="pf-val" id="pfLast">—</span></div>
+              <div class="profile-field"><span class="pf-key">رقم الهوية</span><span class="pf-val" id="pfNid">—</span></div>
+              <div class="profile-field"><span class="pf-key">الهاتف</span><span class="pf-val" id="pfPhone">—</span></div>
+              <div class="profile-field"><span class="pf-key">البريد الإلكتروني</span><span class="pf-val" id="pfEmail">—</span></div>
+              <div class="profile-field"><span class="pf-key">تاريخ التسجيل</span><span class="pf-val" id="pfDate">—</span></div>
+            </div>
+          </div>
+          <button class="btn btn-danger" onclick="doLogout()">🚪 تسجيل الخروج</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-ov" id="modalOv" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modalTitle">تفاصيل الطلب</h3><button class="modal-close" onclick="closeModalDirect()">✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── API ──
+const API_BASE = '/api';
+
+async function apiCall(endpoint, options = {}) {
+  try {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      ...options
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'API Error');
+    return data;
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+}
+
+// ── SESSION STORAGE ──
+const DB = {
+  getSession: () => JSON.parse(sessionStorage.getItem('pl_session') || 'null'),
+  setSession: (u) => sessionStorage.setItem('pl_session', JSON.stringify(u)),
+  clearSession: () => sessionStorage.removeItem('pl_session')
+};
+
+// ── PAGES ──
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='dashboard') loadDashboard();
+}
+
+// ── AUTH ──
+function showAlert(id,msg){
+  const el=document.getElementById(id);
+  el.textContent=msg; el.classList.add('show');
+}
+
+async function doRegister(){
+  document.getElementById('regErr').classList.remove('show');
+  const first=document.getElementById('regFirst').value.trim();
+  const last=document.getElementById('regLast').value.trim();
+  const nid=document.getElementById('regNid').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const phone=document.getElementById('regPhone').value.trim();
+  const pass=document.getElementById('regPass').value;
+  if(!first||!last||!nid||!email||!phone||!pass) return showAlert('regErr','يرجى ملء جميع الحقول المطلوبة');
+  if(pass.length<6) return showAlert('regErr','كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+  try {
+    const data = await apiCall('/register', {
+      method: 'POST',
+      body: JSON.stringify({ first, last, nid, email, phone, pass })
+    });
+    DB.setSession(data.user);
+    showToast('تم إنشاء الحساب بنجاح 🎉');
+    showPage('dashboard');
+  } catch (error) {
+    showAlert('regErr', error.message);
+  }
+}
+
+async function doLogin(){
+  document.getElementById('loginErr').classList.remove('show');
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  if(!email||!pass) return showAlert('loginErr','أدخل البريد الإلكتروني وكلمة المرور');
+
+  try {
+    const data = await apiCall('/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, pass })
+    });
+    DB.setSession(data.user);
+    showToast(`مرحباً ${data.user.first} 👋`);
+    showPage('dashboard');
+  } catch (error) {
+    showAlert('loginErr', error.message);
+  }
+}
+
+function doLogout(){ DB.clearSession(); showPage('landing'); }
+
+// ── DASHBOARD ──
+async function loadDashboard(){
+  const user=DB.getSession();
+  if(!user){ showPage('login'); return; }
+  const fullName=`${user.first} ${user.last}`;
+  const init=user.first[0];
+  document.getElementById('sbAvatar').textContent=init;
+  document.getElementById('sbName').textContent=fullName;
+  document.getElementById('welcomeMsg').textContent=`مرحباً ${user.first} 👋`;
+  document.getElementById('profileAvatar').textContent=init;
+  document.getElementById('profileName').textContent=fullName;
+  document.getElementById('profileEmail').textContent=user.email;
+  document.getElementById('pfFirst').textContent=user.first;
+  document.getElementById('pfLast').textContent=user.last;
+  document.getElementById('pfNid').textContent=user.nid||'—';
+  document.getElementById('pfPhone').textContent=user.phone||'—';
+  document.getElementById('pfEmail').textContent=user.email;
+  document.getElementById('pfDate').textContent=user.join_date||'—';
+  // prefill request
+  document.getElementById('reqName').value=fullName;
+  document.getElementById('reqPhone').value=user.phone||'';
+  document.getElementById('reqNid').value=user.nid||'';
+  await loadKPIs(); await renderRecentTable(); await renderRequestsTable('all');
+}
+
+async function loadKPIs(){
+  const user=DB.getSession();
+  try {
+    const data = await apiCall(`/requests/${user.id}`);
+    const reqs = data.requests;
+    document.getElementById('kpiTotal').textContent=reqs.length;
+    document.getElementById('kpiPending').textContent=reqs.filter(r=>r.status==='pending').length;
+    document.getElementById('kpiProcess').textContent=reqs.filter(r=>r.status==='review').length;
+    document.getElementById('kpiDone').textContent=reqs.filter(r=>r.status==='ready').length;
+  } catch (error) {
+    console.error('Error loading KPIs:', error);
+  }
+}
+
+function switchPanel(name){
+  document.querySelectorAll('.dash-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  const titles={'home':'لوحة التحكم','new-request':'طلب جديد','my-requests':'طلباتي','profile':'ملفي الشخصي'};
+  document.getElementById('dashTitle').textContent=titles[name]||'';
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes(`'${name}'`)) n.classList.add('active');
+  });
+  if(name==='new-request') resetRequestForm();
+}
+
+// ── REQUEST FORM ──
+let currentStep=1, selectedDoc=null, selectedDocDocs=[], uploadedFiles=[];
+
+function resetRequestForm(){
+  currentStep=1; selectedDoc=null; selectedDocDocs=[]; uploadedFiles=[];
+  document.getElementById('uploadedList').innerHTML='';
+  document.getElementById('fileInput').value='';
+  document.querySelectorAll('.doc-sel-card').forEach(c=>c.classList.remove('selected'));
+  const user=DB.getSession();
+  if(user){
+    document.getElementById('reqName').value=`${user.first} ${user.last}`;
+    document.getElementById('reqPhone').value=user.phone||'';
+    document.getElementById('reqNid').value=user.nid||'';
+    document.getElementById('reqNotes').value='';
+    document.getElementById('reqPurpose').value='';
+    document.getElementById('reqAddress').value='';
+    document.getElementById('reqBirth').value='';
+}
+  goStep(1,true);
+}
+
+function goStep(n,silent=false){
+  if(!silent&&n>currentStep){
+    if(currentStep===1&&!selectedDoc) return showToast('⚠️ اختر نوع الوثيقة أولاً');
+    if(currentStep===2){
+      const name=document.getElementById('reqName').value.trim();
+      const nid=document.getElementById('reqNid').value.trim();
+      const addr=document.getElementById('reqAddress').value.trim();
+      const purp=document.getElementById('reqPurpose').value;
+      if(!name||!nid||!addr||!purp) return showToast('⚠️ يرجى ملء جميع الحقول المطلوبة');
+    }
+    if(currentStep===3&&uploadedFiles.length===0) return showToast('⚠️ يرجى رفع ملف واحد على الأقل');
+  }
+  for(let i=1;i<=4;i++){
+    const el=document.getElementById('step'+i);
+    if(el) el.style.display=(i===n)?'block':'none';
+  }
+  for(let i=1;i<=4;i++){
+    const sc=document.getElementById('sc'+i);
+    const sl=document.getElementById('sl'+i);
+    sc.className='step-circle'; sl.className='step-lbl';
+    if(i<n){sc.classList.add('s-done');sc.textContent='✓';sl.classList.add('s-done');}
+    else if(i===n){sc.classList.add('s-active');sc.textContent=i;sl.classList.add('s-active');}
+    else{sc.textContent=i;}
+  }
+  for(let i=1;i<=3;i++){
+    const line=document.getElementById('sline'+i);
+    if(line) line.className='step-line'+(i<n?' s-done':'');
+  }
+  if(n===4) fillSummary();
+  currentStep=n;
+}
+
+function selectDoc(el,name,ico,docs){
+  selectedDoc=name; selectedDocDocs=docs;
+  document.querySelectorAll('.doc-sel-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('reqDocsList').innerHTML=docs.map(d=>`<div class="req-doc-item">${d}</div>`).join('');
+  setTimeout(()=>goStep(2),300);
+}
+
+function handleFiles(files){
+  Array.from(files).forEach(f=>{
+    if(f.size>5*1024*1024){showToast('⚠️ الملف '+f.name+' يتجاوز 5MB');return;}
+    if(!uploadedFiles.find(u=>u.name===f.name)) uploadedFiles.push(f);
+  });
+  renderUploadedFiles();
+}
+
+function renderUploadedFiles(){
+  document.getElementById('uploadedList').innerHTML=uploadedFiles.map((f,i)=>`
+    <div class="uploaded-item">
+      <span>${f.name.toLowerCase().endsWith('.pdf')?'📄':'🖼️'}</span>
+      <span class="uploaded-item-name">${f.name}</span>
+      <span class="uploaded-item-size">${(f.size/1024).toFixed(0)} KB</span>
+      <button class="uploaded-item-del" onclick="removeFile(${i})">🗑️</button>
+    </div>`).join('');
+}
+
+function removeFile(i){ uploadedFiles.splice(i,1); renderUploadedFiles(); }
+
+const uz=document.getElementById('uploadZone');
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('drag-over');});
+uz.addEventListener('dragleave',()=>uz.classList.remove('drag-over'));
+uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('drag-over');handleFiles(e.dataTransfer.files);});
+
+function fillSummary(){
+  document.getElementById('sumDoc').textContent=selectedDoc||'—';
+  document.getElementById('sumName').textContent=document.getElementById('reqName').value||'—';
+  document.getElementById('sumNid').textContent=document.getElementById('reqNid').value||'—';
+  document.getElementById('sumPhone').textContent=document.getElementById('reqPhone').value||'—';
+  document.getElementById('sumAddr').textContent=document.getElementById('reqAddress').value||'—';
+  document.getElementById('sumPurp').textContent=document.getElementById('reqPurpose').value||'—';
+  document.getElementById('sumFiles').textContent=uploadedFiles.length+' ملف(ات)';
+  document.getElementById('sumDate').textContent=new Date().toLocaleDateString('ar-DZ');
+}
+
+async function submitRequest(){
+  const user=DB.getSession();
+  const data = {
+    userId: user.id,
+    docType: selectedDoc,
+    fullName: document.getElementById('reqName').value,
+    nid: document.getElementById('reqNid').value,
+    birthDate: document.getElementById('reqBirth').value,
+    phone: document.getElementById('reqPhone').value,
+    address: document.getElementById('reqAddress').value,
+    purpose: document.getElementById('reqPurpose').value,
+    notes: document.getElementById('reqNotes').value
+  };
+
+  try {
+    const response = await apiCall('/requests', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    showToast('✅ تم إرسال طلبك! رقم طلبك: ' + response.requestId);
+    switchPanel('my-requests');
+    await loadKPIs(); await renderRecentTable(); await renderRequestsTable('all');
+  } catch (error) {
+    showToast('خطأ في إرسال الطلب: ' + error.message);
+  }
+}
+
+// ── TABLES ──
+const statusMap={
+  pending:{label:'قيد الانتظار',cls:'badge-pending'},
+  review:{label:'قيد المراجعة',cls:'badge-review'},
+  approved:{label:'موافق عليه',cls:'badge-approved'},
+  rejected:{label:'مرفوض',cls:'badge-rejected'},
+  ready:{label:'جاهز للاستلام',cls:'badge-ready'}
+};
+function badgeHTML(s){const m=statusMap[s]||{label:s,cls:''};return`<span class="badge ${m.cls}">${m.label}</span>`;}
+async function getUserReqs(){
+  const user=DB.getSession();
+  try {
+    const data = await apiCall(`/requests/${user.id}`);
+    return data.requests;
+  } catch (error) {
+    console.error('Error getting requests:', error);
+    return [];
+  }
+}
+
+async function renderRecentTable(){
+  const reqs = await getUserReqs();
+  const recent = reqs.slice(-3).reverse();
+  const tb=document.getElementById('homeRecentTbody');
+  if(!recent.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">لا توجد طلبات بعد</td></tr>';return;}
+  tb.innerHTML=recent.map(r=>`<tr><td><strong>${r.id}</strong></td><td>${r.doc_type}</td><td>${r.created_date}</td><td>${badgeHTML(r.status)}</td><td><span class="td-action" onclick="openModal('${r.id}')">عرض</span></td></tr>`).join('');
+}
+
+function filterReqs(f,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderRequestsTable(f);
+}
+
+async function renderRequestsTable(f){
+  let reqs = await getUserReqs();
+  if(f!=='all') reqs=reqs.filter(r=>r.status===f);
+  reqs=reqs.reverse();
+  const tb=document.getElementById('requestsTbody');
+  if(!reqs.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;">لا توجد طلبات</td></tr>';return;}
+  tb.innerHTML=reqs.map(r=>`<tr><td><strong>${r.id}</strong></td><td>${r.doc_type}</td><td>${r.created_date}</td><td>${r.purpose}</td><td>—</td><td>${badgeHTML(r.status)}</td><td><span class="td-action" onclick="openModal('${r.id}')">تفاصيل</span></td></tr>`).join('');
+}
+
+// ── MODAL ──
+async function openModal(id){
+  const reqs = await getUserReqs();
+  const r = reqs.find(item => String(item.id) === String(id));
+  if(!r) return;
+  document.getElementById('modalTitle').textContent='طلب: '+r.id;
+  const tl=(r.timeline||[]).map(t=>`<div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:${t.color||'var(--green)'}"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-title">${t.title}</div><div class="tl-date">${t.date}</div>${t.note?`<div class="tl-note">${t.note}</div>`:''}</div></div>`).join('');
+  const files=(r.files||[]).map(f=>`<div class="uploaded-item"><span>${f.name.toLowerCase().endsWith('.pdf')?'📄':'🖼️'}</span><span class="uploaded-item-name">${f.name}</span><span class="uploaded-item-size">${(f.size/1024).toFixed(0)} KB</span></div>`).join('');
+  document.getElementById('modalBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.5rem;">
+      <div><div style="font-size:0.75rem;color:var(--muted);">نوع الوثيقة</div><div style="font-weight:700;">${r.doc_type}</div></div>
+      <div><div style="font-size:0.75rem;color:var(--muted);">الحالة</div>${badgeHTML(r.status)}</div>
+      <div><div style="font-size:0.75rem;color:var(--muted);">الاسم</div><div style="font-weight:600;">${r.full_name}</div></div>
+      <div><div style="font-size:0.75rem;color:var(--muted);">التاريخ</div><div style="font-weight:600;">${r.created_date}</div></div>
+      <div><div style="font-size:0.75rem;color:var(--muted);">الغرض</div><div style="font-weight:600;">${r.purpose}</div></div>
+      <div><div style="font-size:0.75rem;color:var(--muted);">الهاتف</div><div style="font-weight:600;">${r.phone}</div></div>
+    </div>
+    ${r.notes?`<div style="background:var(--bg);border-radius:10px;padding:0.
+                8rem;margin-bottom:1.2rem;font-size:0.85rem;"><strong>ملاحظات:</strong> ${r.notes}</div>`:''}
+    <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.8rem;">الملفات المرفوعة (${(r.files||[]).length})</div>
+    <div style="margin-bottom:1.5rem;">${files||'<div style="color:var(--muted);font-size:0.85rem;">لا توجد ملفات</div>'}</div>
+    <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.8rem;">متابعة الطلب</div>
+    <div class="timeline">${tl}</div>`;
+  document.getElementById('modalOv').classList.add('open');
+}
+function closeModal(e){if(e.target===document.getElementById('modalOv'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modalOv').classList.remove('open');}
+
+// ── TOAST ──
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── INIT ──
+(function(){
+  const s=DB.getSession();
+  if(s) showPage('dashboard');
+})();
+</script>
+</body>
